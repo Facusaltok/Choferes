@@ -6,92 +6,95 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Custodias San Isidro — Control Operativo</title>
+<title>Custodias San Isidro</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
 
 body{
-background:#0c0c0c;
-color:white;
+background:#0b0b0b;
 font-family:Inter;
+color:white;
+margin:0;
+}
+
+.app{
+max-width:420px;
+margin:auto;
+min-height:100vh;
+background:#0f0f0f;
+padding-bottom:80px;
+}
+
+.header{
+padding:18px;
+border-bottom:1px solid #1f1f1f;
 }
 
 .title{
 font-family:Orbitron;
-letter-spacing:1px;
+font-size:18px;
 }
 
 .card{
-background:#121212;
+background:#151515;
 border-radius:14px;
-border:1px solid #1f1f1f;
-padding:20px;
-box-shadow:0 0 20px rgba(0,0,0,.4);
+padding:16px;
+margin:16px;
 }
 
-.kpi{
-font-size:30px;
-font-weight:700;
-}
-
-.kpi-label{
-font-size:12px;
-color:#aaa;
-}
-
-.navbtn{
-padding:10px 18px;
-border-radius:10px;
-font-weight:600;
-background:#1a1a1a;
-}
-
-.navbtn.active{
-background:#2563eb;
-}
-
-.tablewrap{
-overflow:auto;
-max-height:65vh;
-}
-
-table{
+.input{
 width:100%;
-border-collapse:collapse;
+padding:12px;
+margin-bottom:10px;
+background:#0d0d0d;
+border:1px solid #2a2a2a;
+border-radius:8px;
+color:white;
 }
 
-th{
-text-align:left;
-font-size:12px;
-color:#aaa;
-padding:10px;
-}
-
-td{
-padding:10px;
-border-top:1px solid #1f1f1f;
-}
-
-tr:hover{
-background:#161616;
-}
-
-button.primary{
+.btn{
 background:#2563eb;
-padding:10px 18px;
-border-radius:8px;
+padding:14px;
+border-radius:10px;
+width:100%;
+font-weight:600;
+margin-top:10px;
 }
 
-button.orange{
-background:#ea580c;
-padding:10px 18px;
-border-radius:8px;
+.nav{
+
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+
+max-width:420px;
+margin:auto;
+
+display:flex;
+justify-content:space-around;
+
+background:#121212;
+
+border-top:1px solid #1f1f1f;
+
+padding:10px;
+
+}
+
+.nav button{
+background:none;
+color:#aaa;
+font-size:12px;
+}
+
+.nav button.active{
+color:#3b82f6;
 }
 
 </style>
@@ -100,92 +103,27 @@ border-radius:8px;
 
 <body>
 
-<div class="max-w-7xl mx-auto p-8">
+<div class="app">
 
-<!-- HEADER -->
+<header class="header">
 
-<div class="flex justify-between items-center mb-10">
-
-<div>
-<h1 class="title text-3xl">CUSTODIAS SAN ISIDRO</h1>
-<p class="text-gray-400 text-sm">Sistema operativo de flota</p>
+<div class="title">
+Custodias San Isidro
 </div>
 
-<button id="logout" class="primary">Cerrar sesión</button>
+</header>
 
-</div>
+<div id="screen"></div>
 
-<!-- KPIs -->
+<nav class="nav">
 
-<div class="grid md:grid-cols-4 gap-6 mb-10">
+<button data-screen="inicio" class="active">Inicio</button>
+<button data-screen="jornada">Jornada</button>
+<button data-screen="combustible">Combustible</button>
+<button data-screen="admin">Admin</button>
+<button data-screen="perfil">Perfil</button>
 
-<div class="card">
-
-<div class="kpi" id="kVehiculos">0</div>
-<div class="kpi-label">Vehículos activos</div>
-
-</div>
-
-<div class="card">
-
-<div class="kpi" id="kChoferes">0</div>
-<div class="kpi-label">Choferes</div>
-
-</div>
-
-<div class="card">
-
-<div class="kpi text-green-400" id="kCombustible">0</div>
-<div class="kpi-label">Combustible cargado</div>
-
-</div>
-
-<div class="card">
-
-<div class="kpi text-orange-400" id="kSiniestros">0</div>
-<div class="kpi-label">Siniestros</div>
-
-</div>
-
-</div>
-
-<!-- NAVEGACION -->
-
-<div class="flex gap-3 mb-6">
-
-<button class="navbtn active" data-tab="vehiculos">Vehículos</button>
-<button class="navbtn" data-tab="choferes">Choferes</button>
-<button class="navbtn" data-tab="jornadas">Jornadas</button>
-<button class="navbtn" data-tab="combustible">Combustible</button>
-<button class="navbtn" data-tab="siniestros">Siniestros</button>
-
-</div>
-
-<!-- TABLA -->
-
-<div class="card">
-
-<div class="flex justify-between mb-4">
-
-<input id="buscar" class="bg-black p-2 rounded border border-gray-700" placeholder="Buscar">
-
-<button id="nuevo" class="orange">Nuevo</button>
-
-</div>
-
-<div class="tablewrap">
-
-<table>
-
-<thead id="thead"></thead>
-
-<tbody id="rows"></tbody>
-
-</table>
-
-</div>
-
-</div>
+</nav>
 
 </div>
 
@@ -197,94 +135,274 @@ const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
 
-let current="vehiculos"
+let perfil=null
 
-const tabs={
+async function init(){
 
-vehiculos:{
-table:"vehiculos",
-head:["Marca","Modelo","Dominio","Interno"]
-},
+const {data:userData}=await sb.auth.getUser()
 
-choferes:{
-table:"users",
-head:["Nombre","Apellido","DNI","Legajo"]
-},
+if(!userData.user){
 
-jornadas:{
-table:"registros_diarios",
-head:["Fecha","Vehículo","Chofer","KM inicio","KM fin"]
-},
-
-combustible:{
-table:"combustible_cargas",
-head:["Litros","Monto","Tipo","Fecha"]
-},
-
-siniestros:{
-table:"siniestros_imagenes",
-head:["Registro","Imagen","Fecha"]
-}
+location="index.html"
+return
 
 }
 
-document.querySelectorAll(".navbtn").forEach(b=>{
+const {data}=await sb
+.from("users")
+.select("*")
+.eq("auth_id",userData.user.id)
+.single()
 
-b.onclick=async()=>{
+perfil=data
 
-document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"))
+loadScreen("inicio")
 
-b.classList.add("active")
+}
 
-current=b.dataset.tab
+document.querySelectorAll(".nav button").forEach(btn=>{
 
-await load()
+btn.onclick=()=>{
+
+document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"))
+
+btn.classList.add("active")
+
+loadScreen(btn.dataset.screen)
 
 }
 
 })
 
-async function load(){
+function loadScreen(screen){
 
-const tab=tabs[current]
+const s=document.getElementById("screen")
 
-document.getElementById("thead").innerHTML=
+if(screen==="inicio"){
 
-"<tr>"+tab.head.map(h=>"<th>"+h+"</th>").join("")+"</tr>"
+s.innerHTML=`
 
-const {data}=await sb.from(tab.table).select("*")
+<div class="card">
 
-let rows=""
+<h3>Bienvenido</h3>
 
-data.forEach(r=>{
+<p>${perfil.nombre}</p>
 
-rows+="<tr>"+
+<p>Rol: ${perfil.rol}</p>
 
-Object.values(r).slice(1,5).map(v=>"<td>"+v+"</td>").join("")
+</div>
 
-+"</tr>"
+`
+
+}
+
+if(screen==="jornada"){
+
+s.innerHTML=`
+
+<div class="card">
+
+<h3>Inicio de Jornada</h3>
+
+<select id="vehiculo" class="input"></select>
+
+<input id="km_inicio" class="input" placeholder="Kilómetros">
+
+<input id="combustible_inicio" class="input" placeholder="Combustible %">
+
+<button onclick="iniciarJornada()" class="btn">
+Iniciar Jornada
+</button>
+
+</div>
+
+`
+
+cargarVehiculos()
+
+}
+
+if(screen==="combustible"){
+
+s.innerHTML=`
+
+<div class="card">
+
+<h3>Cargar Combustible</h3>
+
+<input id="litros" class="input" placeholder="Litros">
+
+<input id="monto" class="input" placeholder="Monto">
+
+<select id="tipo" class="input">
+
+<option>Nafta</option>
+<option>Diesel</option>
+
+</select>
+
+<input id="ticket" type="file">
+
+<button onclick="cargarCombustible()" class="btn">
+Guardar
+</button>
+
+</div>
+
+`
+
+}
+
+if(screen==="admin"){
+
+if(perfil.rol!=="admin"){
+
+s.innerHTML="<div class='card'>Sin acceso</div>"
+return
+
+}
+
+s.innerHTML=`
+
+<div class="card">
+
+<h3>Crear Chofer</h3>
+
+<input id="nombre" class="input" placeholder="Nombre">
+
+<input id="apellido" class="input" placeholder="Apellido">
+
+<input id="dni" class="input" placeholder="DNI">
+
+<input id="email" class="input" placeholder="Email">
+
+<input id="password" type="password" class="input" placeholder="Password">
+
+<button onclick="crearChofer()" class="btn">
+Crear Chofer
+</button>
+
+</div>
+
+`
+
+}
+
+if(screen==="perfil"){
+
+s.innerHTML=`
+
+<div class="card">
+
+<button onclick="logout()" class="btn">
+Cerrar sesión
+</button>
+
+</div>
+
+`
+
+}
+
+}
+
+async function cargarVehiculos(){
+
+const {data}=await sb.from("vehiculos").select("*")
+
+const select=document.getElementById("vehiculo")
+
+if(!select) return
+
+data.forEach(v=>{
+
+const o=document.createElement("option")
+
+o.value=v.id
+o.text=v.marca+" "+v.modelo
+
+select.appendChild(o)
 
 })
 
-document.getElementById("rows").innerHTML=rows
+}
+
+async function iniciarJornada(){
+
+const vehiculo=document.getElementById("vehiculo").value
+const km=document.getElementById("km_inicio").value
+const comb=document.getElementById("combustible_inicio").value
+
+const {data:userData}=await sb.auth.getUser()
+
+await sb.from("registros_diarios").insert({
+
+vehiculo_id:vehiculo,
+chofer_id:userData.user.id,
+
+kilometros_inicio:km,
+combustible_inicio:comb
+
+})
+
+alert("Jornada iniciada")
 
 }
 
-async function loadKPI(){
+async function cargarCombustible(){
 
-const v=await sb.from("vehiculos").select("*")
-const c=await sb.from("users").select("*")
-const f=await sb.from("combustible_cargas").select("*")
-const s=await sb.from("siniestros_imagenes").select("*")
+const litros=document.getElementById("litros").value
+const monto=document.getElementById("monto").value
 
-document.getElementById("kVehiculos").innerText=v.data.length
-document.getElementById("kChoferes").innerText=c.data.length
-document.getElementById("kCombustible").innerText=f.data.length
-document.getElementById("kSiniestros").innerText=s.data.length
+await sb.from("combustible_cargas").insert({
+
+litros,
+monto
+
+})
+
+alert("Carga registrada")
 
 }
 
-document.getElementById("logout").onclick=async()=>{
+async function crearChofer(){
+
+const email=document.getElementById("email").value
+const password=document.getElementById("password").value
+
+const {data,error}=await sb.auth.admin.createUser({
+
+email,
+password,
+email_confirm:true
+
+})
+
+if(error){
+
+alert(error.message)
+return
+
+}
+
+await sb.from("users").insert({
+
+auth_id:data.user.id,
+
+nombre:document.getElementById("nombre").value,
+apellido:document.getElementById("apellido").value,
+dni:document.getElementById("dni").value,
+
+email:email,
+rol:"chofer"
+
+})
+
+alert("Chofer creado")
+
+}
+
+async function logout(){
 
 await sb.auth.signOut()
 
@@ -292,8 +410,7 @@ location="index.html"
 
 }
 
-load()
-loadKPI()
+init()
 
 </script>
 
