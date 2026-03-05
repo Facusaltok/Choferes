@@ -1,0 +1,6 @@
+users
+vehiculos
+registros_diarios
+combustible_cargas
+siniestros_imagenes
+documentos_vehiculos
