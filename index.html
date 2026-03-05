@@ -1,29 +1,102 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+
 <head>
+
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Custodias San Isidro</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="/js/supabase.js"></script>
-<script src="/js/auth.js"></script>
+
+<style>
+
+body{
+background:#0b0b0b;
+color:white;
+font-family:Inter;
+display:flex;
+align-items:center;
+justify-content:center;
+height:100vh;
+}
+
+.card{
+background:#151515;
+padding:30px;
+border-radius:14px;
+width:320px;
+}
+
+.input{
+width:100%;
+padding:12px;
+margin-bottom:12px;
+background:#0f0f0f;
+border:1px solid #2a2a2a;
+border-radius:8px;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#2563eb;
+border-radius:10px;
+font-weight:600;
+}
+
+</style>
+
 </head>
 
-<body class="bg-slate-900 flex items-center justify-center h-screen">
+<body>
 
-<div class="bg-white p-10 rounded-xl w-96">
+<div class="card">
 
-<h1 class="text-2xl font-bold mb-6">Ingreso Choferes</h1>
+<h2 class="text-xl mb-4">Ingreso Sistema</h2>
 
-<input id="email" class="border p-2 w-full mb-3" placeholder="Email">
+<input id="email" class="input" placeholder="Email">
 
-<input id="password" type="password" class="border p-2 w-full mb-4" placeholder="Contraseña">
+<input id="password" type="password" class="input" placeholder="Contraseña">
 
-<button onclick="login()" class="bg-black text-white w-full p-3 rounded">
-Ingresar
-</button>
+<button onclick="login()">Ingresar</button>
 
 </div>
+
+<script>
+
+const SUPABASE_URL="https://cdnwxerixgrgvrdsotaf.supabase.co"
+
+const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
+
+async function login(){
+
+const email=document.getElementById("email").value
+const password=document.getElementById("password").value
+
+const {error}=await sb.auth.signInWithPassword({
+
+email,
+password
+
+})
+
+if(error){
+
+alert(error.message)
+return
+
+}
+
+location.href="dashboard.html"
+
+}
+
+</script>
 
 </body>
 </html>
