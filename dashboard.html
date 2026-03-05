@@ -3,10 +3,10 @@
 
 <head>
 
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Custodias San Isidro — Control Operativo</title>
+<title>Custodias San Isidro — Panel Admin</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -84,44 +84,31 @@ border-bottom:1px solid #1f1f1f;
 
 <div class="max-w-7xl mx-auto p-8">
 
-<div class="flex justify-between items-center mb-10">
-
-<div>
-
-<h1 class="title text-3xl">CUSTODIAS SAN ISIDRO</h1>
-<p class="text-gray-400 text-sm">Sistema operativo de flota</p>
-
-</div>
-
-<button id="logout" class="primary">Cerrar sesión</button>
-
-</div>
+<h1 class="title text-3xl mb-6">
+CUSTODIAS SAN ISIDRO
+</h1>
 
 <div class="flex gap-3 mb-6">
 
 <button class="navbtn active" data-tab="vehiculos">Vehículos</button>
 <button class="navbtn" data-tab="choferes">Choferes</button>
-<button class="navbtn" data-tab="mapa">Mapa en vivo</button>
+<button class="navbtn" data-tab="mapa">Mapa</button>
 
 </div>
 
 <div class="card">
 
-<!-- VEHICULOS -->
-
 <div id="vehiculosPanel">
 
-<h3 class="mb-4">Crear Vehículo</h3>
+<h3>Crear Vehículo</h3>
 
 <input id="marca" placeholder="Marca">
 <input id="modelo" placeholder="Modelo">
 <input id="dominio" placeholder="Patente">
 
-<button onclick="crearVehiculo()" class="primary">
+<button class="primary" onclick="crearVehiculo()">
 Crear Vehículo
 </button>
-
-<h3 class="mt-8">Vehículos registrados</h3>
 
 <table>
 
@@ -130,7 +117,7 @@ Crear Vehículo
 <tr>
 <th>Marca</th>
 <th>Modelo</th>
-<th>Patente</th>
+<th>Dominio</th>
 <th></th>
 </tr>
 
@@ -142,11 +129,9 @@ Crear Vehículo
 
 </div>
 
-<!-- CHOFERES -->
-
 <div id="choferPanel" style="display:none">
 
-<h3 class="mb-4">Crear Chofer</h3>
+<h3>Crear Chofer</h3>
 
 <input id="nombre" placeholder="Nombre">
 <input id="apellido" placeholder="Apellido">
@@ -154,11 +139,9 @@ Crear Vehículo
 <input id="email" placeholder="Email">
 <input id="password" placeholder="Contraseña">
 
-<button onclick="crearChofer()" class="primary">
+<button class="primary" onclick="crearChofer()">
 Crear Chofer
 </button>
-
-<h3 class="mt-8">Choferes registrados</h3>
 
 <table>
 
@@ -180,8 +163,6 @@ Crear Chofer
 
 </div>
 
-<!-- MAPA -->
-
 <div id="mapPanel" style="display:none">
 
 <div id="map" style="height:500px"></div>
@@ -200,7 +181,26 @@ const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
 
-/* NAVEGACION */
+async function verificarAdmin(){
+
+const { data } = await sb.auth.getUser()
+
+const { data:perfil } = await sb
+.from("users")
+.select("rol")
+.eq("auth_id",data.user.id)
+.single()
+
+if(perfil.rol !== "admin"){
+
+alert("Acceso solo administrador")
+location="chofer.html"
+
+}
+
+}
+
+verificarAdmin()
 
 document.querySelectorAll(".navbtn").forEach(btn=>{
 
@@ -210,30 +210,34 @@ document.querySelectorAll(".navbtn").forEach(b=>b.classList.remove("active"))
 
 btn.classList.add("active")
 
-document.getElementById("vehiculosPanel").style.display="none"
-document.getElementById("choferPanel").style.display="none"
-document.getElementById("mapPanel").style.display="none"
+vehiculosPanel.style.display="none"
+choferPanel.style.display="none"
+mapPanel.style.display="none"
 
 if(btn.dataset.tab==="vehiculos"){
-document.getElementById("vehiculosPanel").style.display="block"
+
+vehiculosPanel.style.display="block"
 cargarVehiculos()
+
 }
 
 if(btn.dataset.tab==="choferes"){
-document.getElementById("choferPanel").style.display="block"
+
+choferPanel.style.display="block"
 cargarChoferes()
+
 }
 
 if(btn.dataset.tab==="mapa"){
-document.getElementById("mapPanel").style.display="block"
+
+mapPanel.style.display="block"
 cargarMapa()
+
 }
 
 }
 
 })
-
-/* VEHICULOS */
 
 async function crearVehiculo(){
 
@@ -292,8 +296,6 @@ cargarVehiculos()
 
 }
 
-/* CHOFERES */
-
 async function crearChofer(){
 
 const {data,error}=await sb.auth.signUp({
@@ -304,8 +306,10 @@ password:password.value
 })
 
 if(error){
+
 alert(error.message)
 return
+
 }
 
 await sb.from("users").insert({
@@ -368,8 +372,6 @@ cargarChoferes()
 
 }
 
-/* MAPA */
-
 let map
 
 function cargarMapa(){
@@ -378,7 +380,9 @@ if(!map){
 
 map=L.map('map').setView([-34.6,-58.4],12)
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+).addTo(map)
 
 }
 
@@ -396,32 +400,19 @@ data.forEach(g=>{
 
 const marker=L.marker([g.lat,g.lng]).addTo(map)
 
-marker.bindPopup(`
+marker.bindPopup(
 
-Vehículo en movimiento
-
-<br><br>
-
+`Vehículo en vivo<br><br>
 <a target="_blank"
 href="https://www.waze.com/ul?ll=${g.lat},${g.lng}&navigate=yes">
 
 Navegar con Waze
 
-</a>
+</a>`
 
-`)
+)
 
 })
-
-}
-
-/* LOGOUT */
-
-logout.onclick=async()=>{
-
-await sb.auth.signOut()
-
-location="index.html"
 
 }
 
