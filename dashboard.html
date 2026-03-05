@@ -10,7 +10,6 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -27,7 +26,6 @@ font-family:Inter;
 
 .title{
 font-family:Orbitron;
-letter-spacing:1px;
 }
 
 .card{
@@ -35,54 +33,16 @@ background:#121212;
 border-radius:14px;
 border:1px solid #1f1f1f;
 padding:20px;
-box-shadow:0 0 20px rgba(0,0,0,.4);
-}
-
-.kpi{
-font-size:30px;
-font-weight:700;
-}
-
-.kpi-label{
-font-size:12px;
-color:#aaa;
 }
 
 .navbtn{
 padding:10px 18px;
 border-radius:10px;
-font-weight:600;
 background:#1a1a1a;
 }
 
 .navbtn.active{
 background:#2563eb;
-}
-
-.tablewrap{
-overflow:auto;
-max-height:65vh;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-}
-
-th{
-text-align:left;
-font-size:12px;
-color:#aaa;
-padding:10px;
-}
-
-td{
-padding:10px;
-border-top:1px solid #1f1f1f;
-}
-
-tr:hover{
-background:#161616;
 }
 
 button.primary{
@@ -91,10 +51,13 @@ padding:10px 18px;
 border-radius:8px;
 }
 
-button.orange{
-background:#ea580c;
-padding:10px 18px;
+input{
+background:#0c0c0c;
+border:1px solid #1f1f1f;
+padding:10px;
 border-radius:8px;
+width:100%;
+margin-bottom:10px;
 }
 
 </style>
@@ -108,62 +71,59 @@ border-radius:8px;
 <div class="flex justify-between items-center mb-10">
 
 <div>
+
 <h1 class="title text-3xl">CUSTODIAS SAN ISIDRO</h1>
 <p class="text-gray-400 text-sm">Sistema operativo de flota</p>
+
 </div>
 
 <button id="logout" class="primary">Cerrar sesión</button>
 
 </div>
 
-<div class="grid md:grid-cols-4 gap-6 mb-10">
-
-<div class="card">
-<div class="kpi" id="kVehiculos">0</div>
-<div class="kpi-label">Vehículos activos</div>
-</div>
-
-<div class="card">
-<div class="kpi" id="kChoferes">0</div>
-<div class="kpi-label">Choferes</div>
-</div>
-
-<div class="card">
-<div class="kpi text-green-400" id="kCombustible">0</div>
-<div class="kpi-label">Combustible cargado</div>
-</div>
-
-<div class="card">
-<div class="kpi text-orange-400" id="kAlertas">0</div>
-<div class="kpi-label">Alertas</div>
-</div>
-
-</div>
-
-<div class="card mb-8">
-<canvas id="fuelChart"></canvas>
-</div>
-
 <div class="flex gap-3 mb-6">
 
 <button class="navbtn active" data-tab="vehiculos">Vehículos</button>
 <button class="navbtn" data-tab="choferes">Choferes</button>
-<button class="navbtn" data-tab="jornadas">Jornadas</button>
-<button class="navbtn" data-tab="combustible">Combustible</button>
 <button class="navbtn" data-tab="mapa">Mapa en vivo</button>
 
 </div>
 
 <div class="card">
 
-<div id="map" style="height:350px;display:none"></div>
+<div id="vehiculosPanel">
 
-<div class="tablewrap">
+<h3 class="mb-4">Crear Vehículo</h3>
 
-<table>
-<thead id="thead"></thead>
-<tbody id="rows"></tbody>
-</table>
+<input id="marca" placeholder="Marca">
+<input id="modelo" placeholder="Modelo">
+<input id="dominio" placeholder="Patente">
+
+<button onclick="crearVehiculo()" class="primary">
+Crear Vehículo
+</button>
+
+</div>
+
+<div id="choferPanel" style="display:none">
+
+<h3 class="mb-4">Crear Chofer</h3>
+
+<input id="nombre" placeholder="Nombre">
+<input id="apellido" placeholder="Apellido">
+<input id="dni" placeholder="DNI">
+<input id="email" placeholder="Email">
+<input id="password" placeholder="Contraseña">
+
+<button onclick="crearChofer()" class="primary">
+Crear Chofer
+</button>
+
+</div>
+
+<div id="mapPanel" style="display:none">
+
+<div id="map" style="height:450px"></div>
 
 </div>
 
@@ -179,116 +139,86 @@ const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
 
-let current="vehiculos"
+document.querySelectorAll(".navbtn").forEach(btn=>{
 
-document.querySelectorAll(".navbtn").forEach(b=>{
+btn.onclick=()=>{
 
-b.onclick=async()=>{
+document.querySelectorAll(".navbtn").forEach(b=>b.classList.remove("active"))
 
-document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"))
+btn.classList.add("active")
 
-b.classList.add("active")
+document.getElementById("vehiculosPanel").style.display="none"
+document.getElementById("choferPanel").style.display="none"
+document.getElementById("mapPanel").style.display="none"
 
-current=b.dataset.tab
+if(btn.dataset.tab==="vehiculos")
+document.getElementById("vehiculosPanel").style.display="block"
 
-if(current==="mapa"){
+if(btn.dataset.tab==="choferes")
+document.getElementById("choferPanel").style.display="block"
 
-mostrarMapa()
+if(btn.dataset.tab==="mapa"){
 
+document.getElementById("mapPanel").style.display="block"
+cargarMapa()
+
+}
+
+}
+
+})
+
+async function crearVehiculo(){
+
+await sb.from("vehiculos").insert({
+
+marca:document.getElementById("marca").value,
+modelo:document.getElementById("modelo").value,
+dominio:document.getElementById("dominio").value
+
+})
+
+alert("Vehículo creado")
+
+}
+
+async function crearChofer(){
+
+const email=document.getElementById("email").value
+const password=document.getElementById("password").value
+
+const {data,error}=await sb.auth.admin.createUser({
+
+email,
+password,
+email_confirm:true
+
+})
+
+if(error){
+
+alert(error.message)
 return
 
 }
 
-document.getElementById("map").style.display="none"
+await sb.from("users").insert({
 
-load()
+auth_id:data.user.id,
 
-}
-
-})
-
-async function load(){
-
-const {data}=await sb.from(current).select("*")
-
-const rows=document.getElementById("rows")
-
-rows.innerHTML=""
-
-data.forEach(r=>{
-
-const tr=document.createElement("tr")
-
-Object.values(r).forEach(v=>{
-
-const td=document.createElement("td")
-td.innerText=v
-tr.appendChild(td)
+nombre:document.getElementById("nombre").value,
+apellido:document.getElementById("apellido").value,
+dni:document.getElementById("dni").value,
+email:email,
+rol:"chofer"
 
 })
 
-rows.appendChild(tr)
-
-})
+alert("Chofer creado")
 
 }
 
-async function loadKPIs(){
-
-const v=await sb.from("vehiculos").select("*")
-const c=await sb.from("users").select("*")
-const f=await sb.from("combustible_cargas").select("*")
-
-document.getElementById("kVehiculos").innerText=v.data.length
-document.getElementById("kChoferes").innerText=c.data.length
-document.getElementById("kCombustible").innerText=f.data.length
-
-}
-
-async function grafico(){
-
-const {data}=await sb.from("combustible_cargas").select("*")
-
-new Chart(document.getElementById("fuelChart"),{
-
-type:"bar",
-
-data:{
-labels:data.map(x=>x.fecha),
-datasets:[{
-label:"Litros",
-data:data.map(x=>x.litros),
-backgroundColor:"#22c55e"
-}]
-}
-
-})
-
-}
-
-function gps(){
-
-navigator.geolocation.getCurrentPosition(async pos=>{
-
-const {data:user}=await sb.auth.getUser()
-
-await sb.from("gps").insert({
-
-user_id:user.user.id,
-lat:pos.coords.latitude,
-lng:pos.coords.longitude
-
-})
-
-})
-
-setInterval(gps,30000)
-
-}
-
-function mostrarMapa(){
-
-document.getElementById("map").style.display="block"
+function cargarMapa(){
 
 const map=L.map('map').setView([-34.6,-58.4],12)
 
@@ -300,11 +230,25 @@ cargarGPS(map)
 
 async function cargarGPS(map){
 
-const {data}=await sb.from("gps").select("*").limit(20)
+const {data}=await sb.from("gps").select("*")
 
 data.forEach(g=>{
 
-L.marker([g.lat,g.lng]).addTo(map)
+const marker=L.marker([g.lat,g.lng]).addTo(map)
+
+marker.bindPopup(`
+
+Vehículo en vivo
+
+<br><br>
+
+<a target="_blank"
+href="https://www.waze.com/ul?ll=${g.lat},${g.lng}&navigate=yes">
+
+Navegar con Waze
+</a>
+
+`)
 
 })
 
@@ -317,11 +261,6 @@ await sb.auth.signOut()
 location="index.html"
 
 }
-
-load()
-loadKPIs()
-grafico()
-gps()
 
 </script>
 
