@@ -3,7 +3,7 @@
 
 <head>
 
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Custodias San Isidro — Panel Admin</title>
@@ -26,6 +26,7 @@ font-family:Inter;
 
 .title{
 font-family:Orbitron;
+letter-spacing:1px;
 }
 
 .card{
@@ -38,6 +39,7 @@ padding:20px;
 .navbtn{
 padding:10px 18px;
 border-radius:10px;
+font-weight:600;
 background:#1a1a1a;
 }
 
@@ -57,23 +59,37 @@ padding:6px 10px;
 border-radius:6px;
 }
 
-select,input{
+input,select{
+
 background:#0c0c0c;
 border:1px solid #333;
 padding:10px;
 width:100%;
 margin-bottom:10px;
 border-radius:8px;
+
 }
 
 table{
 width:100%;
+border-collapse:collapse;
 margin-top:20px;
 }
 
-td,th{
+th{
+text-align:left;
+font-size:12px;
+color:#aaa;
 padding:10px;
-border-bottom:1px solid #1f1f1f;
+}
+
+td{
+padding:10px;
+border-top:1px solid #1f1f1f;
+}
+
+tr:hover{
+background:#161616;
 }
 
 </style>
@@ -84,11 +100,19 @@ border-bottom:1px solid #1f1f1f;
 
 <div class="max-w-7xl mx-auto p-8">
 
-<div class="flex justify-between mb-8">
+<div class="flex justify-between items-center mb-10">
+
+<div>
 
 <h1 class="title text-3xl">
 CUSTODIAS SAN ISIDRO
 </h1>
+
+<p class="text-gray-400 text-sm">
+Sistema operativo de flota
+</p>
+
+</div>
 
 <button id="logout" class="primary">
 Cerrar sesión
@@ -98,9 +122,17 @@ Cerrar sesión
 
 <div class="flex gap-3 mb-6">
 
-<button class="navbtn active" data-tab="vehiculos">Vehículos</button>
-<button class="navbtn" data-tab="usuarios">Usuarios</button>
-<button class="navbtn" data-tab="mapa">Mapa</button>
+<button class="navbtn active" data-tab="vehiculos">
+Vehículos
+</button>
+
+<button class="navbtn" data-tab="usuarios">
+Usuarios
+</button>
+
+<button class="navbtn" data-tab="mapa">
+Mapa
+</button>
 
 </div>
 
@@ -110,13 +142,15 @@ Cerrar sesión
 
 <div id="vehiculosPanel">
 
-<h3>Crear Vehículo</h3>
+<h3 class="mb-4">
+Crear Vehículo
+</h3>
 
 <input id="marca" placeholder="Marca">
 <input id="modelo" placeholder="Modelo">
 <input id="dominio" placeholder="Patente">
 
-<button class="primary" onclick="crearVehiculo()">
+<button onclick="crearVehiculo()" class="primary">
 Crear Vehículo
 </button>
 
@@ -127,7 +161,7 @@ Crear Vehículo
 <tr>
 <th>Marca</th>
 <th>Modelo</th>
-<th>Dominio</th>
+<th>Patente</th>
 <th></th>
 </tr>
 
@@ -143,7 +177,9 @@ Crear Vehículo
 
 <div id="usuariosPanel" style="display:none">
 
-<h3>Crear Usuario</h3>
+<h3 class="mb-4">
+Crear Usuario
+</h3>
 
 <input id="nombre" placeholder="Nombre">
 <input id="apellido" placeholder="Apellido">
@@ -152,11 +188,18 @@ Crear Vehículo
 <input id="password" placeholder="Contraseña">
 
 <select id="rol">
-<option value="chofer">Chofer</option>
-<option value="admin">Administrador</option>
+
+<option value="chofer">
+Chofer
+</option>
+
+<option value="admin">
+Administrador
+</option>
+
 </select>
 
-<button class="primary" onclick="crearUsuario()">
+<button onclick="crearUsuario()" class="primary">
 Crear Usuario
 </button>
 
@@ -200,6 +243,8 @@ const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
 
+/* CERRAR SESION */
+
 document.getElementById("logout").onclick=async()=>{
 
 await sb.auth.signOut()
@@ -223,18 +268,24 @@ usuariosPanel.style.display="none"
 mapPanel.style.display="none"
 
 if(btn.dataset.tab==="vehiculos"){
+
 vehiculosPanel.style.display="block"
 cargarVehiculos()
+
 }
 
 if(btn.dataset.tab==="usuarios"){
+
 usuariosPanel.style.display="block"
 cargarUsuarios()
+
 }
 
 if(btn.dataset.tab==="mapa"){
+
 mapPanel.style.display="block"
 cargarMapa()
+
 }
 
 }
@@ -330,6 +381,8 @@ rol:rol.value
 
 })
 
+alert("Usuario creado")
+
 cargarUsuarios()
 
 }
@@ -354,8 +407,13 @@ usuariosLista.innerHTML+=`
 
 <select onchange="cambiarRol('${u.id}',this.value)">
 
-<option ${u.rol=="chofer"?"selected":""}>chofer</option>
-<option ${u.rol=="admin"?"selected":""}>admin</option>
+<option value="chofer" ${u.rol=="chofer"?"selected":""}>
+Chofer
+</option>
+
+<option value="admin" ${u.rol=="admin"?"selected":""}>
+Admin
+</option>
 
 </select>
 
@@ -428,18 +486,18 @@ data.forEach(g=>{
 
 const marker=L.marker([g.lat,g.lng]).addTo(map)
 
-marker.bindPopup(`
+marker.bindPopup(
 
-Vehículo en vivo<br><br>
+`Vehículo en vivo<br><br>
 
 <a target="_blank"
 href="https://www.waze.com/ul?ll=${g.lat},${g.lng}&navigate=yes">
 
 Navegar con Waze
 
-</a>
+</a>`
 
-`)
+)
 
 })
 
