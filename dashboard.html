@@ -57,13 +57,13 @@ padding:6px 10px;
 border-radius:6px;
 }
 
-input{
+select,input{
 background:#0c0c0c;
-border:1px solid #1f1f1f;
+border:1px solid #333;
 padding:10px;
-border-radius:8px;
 width:100%;
 margin-bottom:10px;
+border-radius:8px;
 }
 
 table{
@@ -84,19 +84,29 @@ border-bottom:1px solid #1f1f1f;
 
 <div class="max-w-7xl mx-auto p-8">
 
-<h1 class="title text-3xl mb-6">
+<div class="flex justify-between mb-8">
+
+<h1 class="title text-3xl">
 CUSTODIAS SAN ISIDRO
 </h1>
+
+<button id="logout" class="primary">
+Cerrar sesión
+</button>
+
+</div>
 
 <div class="flex gap-3 mb-6">
 
 <button class="navbtn active" data-tab="vehiculos">Vehículos</button>
-<button class="navbtn" data-tab="choferes">Choferes</button>
+<button class="navbtn" data-tab="usuarios">Usuarios</button>
 <button class="navbtn" data-tab="mapa">Mapa</button>
 
 </div>
 
 <div class="card">
+
+<!-- VEHICULOS -->
 
 <div id="vehiculosPanel">
 
@@ -129,9 +139,11 @@ Crear Vehículo
 
 </div>
 
-<div id="choferPanel" style="display:none">
+<!-- USUARIOS -->
 
-<h3>Crear Chofer</h3>
+<div id="usuariosPanel" style="display:none">
+
+<h3>Crear Usuario</h3>
 
 <input id="nombre" placeholder="Nombre">
 <input id="apellido" placeholder="Apellido">
@@ -139,8 +151,13 @@ Crear Vehículo
 <input id="email" placeholder="Email">
 <input id="password" placeholder="Contraseña">
 
-<button class="primary" onclick="crearChofer()">
-Crear Chofer
+<select id="rol">
+<option value="chofer">Chofer</option>
+<option value="admin">Administrador</option>
+</select>
+
+<button class="primary" onclick="crearUsuario()">
+Crear Usuario
 </button>
 
 <table>
@@ -150,18 +167,20 @@ Crear Chofer
 <tr>
 <th>Nombre</th>
 <th>Apellido</th>
-<th>DNI</th>
 <th>Email</th>
+<th>Rol</th>
 <th></th>
 </tr>
 
 </thead>
 
-<tbody id="choferLista"></tbody>
+<tbody id="usuariosLista"></tbody>
 
 </table>
 
 </div>
+
+<!-- MAPA -->
 
 <div id="mapPanel" style="display:none">
 
@@ -181,26 +200,15 @@ const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
 
-async function verificarAdmin(){
+document.getElementById("logout").onclick=async()=>{
 
-const { data } = await sb.auth.getUser()
+await sb.auth.signOut()
 
-const { data:perfil } = await sb
-.from("users")
-.select("rol")
-.eq("auth_id",data.user.id)
-.single()
-
-if(perfil.rol !== "admin"){
-
-alert("Acceso solo administrador")
-location="chofer.html"
+location="index.html"
 
 }
 
-}
-
-verificarAdmin()
+/* NAVEGACION */
 
 document.querySelectorAll(".navbtn").forEach(btn=>{
 
@@ -211,33 +219,29 @@ document.querySelectorAll(".navbtn").forEach(b=>b.classList.remove("active"))
 btn.classList.add("active")
 
 vehiculosPanel.style.display="none"
-choferPanel.style.display="none"
+usuariosPanel.style.display="none"
 mapPanel.style.display="none"
 
 if(btn.dataset.tab==="vehiculos"){
-
 vehiculosPanel.style.display="block"
 cargarVehiculos()
-
 }
 
-if(btn.dataset.tab==="choferes"){
-
-choferPanel.style.display="block"
-cargarChoferes()
-
+if(btn.dataset.tab==="usuarios"){
+usuariosPanel.style.display="block"
+cargarUsuarios()
 }
 
 if(btn.dataset.tab==="mapa"){
-
 mapPanel.style.display="block"
 cargarMapa()
-
 }
 
 }
 
 })
+
+/* VEHICULOS */
 
 async function crearVehiculo(){
 
@@ -296,7 +300,9 @@ cargarVehiculos()
 
 }
 
-async function crearChofer(){
+/* USUARIOS */
+
+async function crearUsuario(){
 
 const {data,error}=await sb.auth.signUp({
 
@@ -320,35 +326,45 @@ nombre:nombre.value,
 apellido:apellido.value,
 dni:dni.value,
 email:email.value,
-rol:"chofer"
+rol:rol.value
 
 })
 
-cargarChoferes()
+cargarUsuarios()
 
 }
 
-async function cargarChoferes(){
+async function cargarUsuarios(){
 
 const {data}=await sb.from("users").select("*")
 
-choferLista.innerHTML=""
+usuariosLista.innerHTML=""
 
-data.forEach(c=>{
+data.forEach(u=>{
 
-choferLista.innerHTML+=`
+usuariosLista.innerHTML+=`
 
 <tr>
 
-<td>${c.nombre}</td>
-<td>${c.apellido}</td>
-<td>${c.dni}</td>
-<td>${c.email}</td>
+<td>${u.nombre}</td>
+<td>${u.apellido}</td>
+<td>${u.email}</td>
+
+<td>
+
+<select onchange="cambiarRol('${u.id}',this.value)">
+
+<option ${u.rol=="chofer"?"selected":""}>chofer</option>
+<option ${u.rol=="admin"?"selected":""}>admin</option>
+
+</select>
+
+</td>
 
 <td>
 
 <button class="danger"
-onclick="borrarChofer('${c.id}')">
+onclick="borrarUsuario('${u.id}')">
 
 Eliminar
 
@@ -364,13 +380,25 @@ Eliminar
 
 }
 
-async function borrarChofer(id){
+async function cambiarRol(id,rol){
+
+await sb.from("users").update({
+
+rol
+
+}).eq("id",id)
+
+}
+
+async function borrarUsuario(id){
 
 await sb.from("users").delete().eq("id",id)
 
-cargarChoferes()
+cargarUsuarios()
 
 }
+
+/* MAPA */
 
 let map
 
@@ -400,17 +428,18 @@ data.forEach(g=>{
 
 const marker=L.marker([g.lat,g.lng]).addTo(map)
 
-marker.bindPopup(
+marker.bindPopup(`
 
-`Vehículo en vivo<br><br>
+Vehículo en vivo<br><br>
+
 <a target="_blank"
 href="https://www.waze.com/ul?ll=${g.lat},${g.lng}&navigate=yes">
 
 Navegar con Waze
 
-</a>`
+</a>
 
-)
+`)
 
 })
 
