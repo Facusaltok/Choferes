@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>App Chofer</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<style>
+
+body{
+background:#0c0c0c;
+color:white;
+font-family:Inter;
+}
+
+.card{
+background:#121212;
+border-radius:12px;
+padding:20px;
+margin-top:20px;
+}
+
+input,select{
+
+background:#0c0c0c;
+border:1px solid #333;
+padding:10px;
+width:100%;
+margin-bottom:10px;
+border-radius:8px;
+
+}
+
+button{
+
+background:#2563eb;
+padding:10px 18px;
+border-radius:8px;
+
+}
+
+</style>
+
+</head>
+
+<body class="p-6">
+
+<h1 class="text-2xl mb-4">
+
+APP CHOFER
+
+</h1>
+
+<div class="card">
+
+<h3>Inicio Jornada</h3>
+
+<select id="vehiculo"></select>
+
+<input id="km_inicio" placeholder="KM Inicio">
+
+<input id="combustible_inicio" placeholder="Combustible %">
+
+<button onclick="iniciarJornada()">
+
+Iniciar Jornada
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>Cargar Combustible</h3>
+
+<input id="litros" placeholder="Litros">
+
+<input id="monto" placeholder="Monto">
+
+<select id="tipo">
+
+<option>Nafta</option>
+<option>Diesel</option>
+
+</select>
+
+<button onclick="cargarCombustible()">
+
+Registrar
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>Reportar Siniestro</h3>
+
+<input id="descripcion" placeholder="Descripción">
+
+<button onclick="reportarSiniestro()">
+
+Reportar
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>Cerrar Jornada</h3>
+
+<input id="km_fin" placeholder="KM Final">
+
+<input id="combustible_fin" placeholder="Combustible Final">
+
+<button onclick="cerrarJornada()">
+
+Cerrar Jornada
+
+</button>
+
+</div>
+
+<script>
+
+const SUPABASE_URL="https://cdnwxerixgrgvrdsotaf.supabase.co"
+
+const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkbnd4ZXJpeGdyZ3ZyZHNvdGFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MTU4NjIsImV4cCI6MjA4ODI5MTg2Mn0.RWdHadeoNvjMHomUu158umWEcmlUXNLIF3TrFwgJy3k"
+
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
+
+navigator.geolocation.watchPosition(async pos=>{
+
+await sb.from("gps").insert({
+
+lat:pos.coords.latitude,
+lng:pos.coords.longitude
+
+})
+
+})
+
+async function cargarVehiculos(){
+
+const {data}=await sb.from("vehiculos").select("*")
+
+data.forEach(v=>{
+
+vehiculo.innerHTML+=`
+
+<option value="${v.id}">
+
+${v.marca} ${v.modelo}
+
+</option>
+
+`
+
+})
+
+}
+
+cargarVehiculos()
+
+async function iniciarJornada(){
+
+await sb.from("registros_diarios").insert({
+
+vehiculo_id:vehiculo.value,
+kilometros_inicio:km_inicio.value,
+combustible_inicio:combustible_inicio.value
+
+})
+
+alert("Jornada iniciada")
+
+}
+
+async function cargarCombustible(){
+
+await sb.from("combustible_cargas").insert({
+
+litros:litros.value,
+monto:monto.value,
+tipo_combustible:tipo.value
+
+})
+
+alert("Carga registrada")
+
+}
+
+async function reportarSiniestro(){
+
+await sb.from("siniestros_imagenes").insert({
+
+descripcion:descripcion.value
+
+})
+
+alert("Siniestro reportado")
+
+}
+
+async function cerrarJornada(){
+
+await sb.from("registros_diarios").update({
+
+kilometros_fin:km_fin.value,
+combustible_fin:combustible_fin.value
+
+})
+
+alert("Jornada cerrada")
+
+}
+
+</script>
+
+</body>
+</html>
