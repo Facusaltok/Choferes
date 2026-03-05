@@ -3,18 +3,20 @@
 
 <head>
 
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Custodias San Isidro</title>
+<title>Custodias San Isidro — Acceso</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
 
 body{
-background:#0b0b0b;
+background:#0c0c0c;
 color:white;
 font-family:Inter;
 display:flex;
@@ -23,28 +25,46 @@ justify-content:center;
 height:100vh;
 }
 
+.title{
+font-family:Orbitron;
+letter-spacing:1px;
+}
+
 .card{
-background:#151515;
-padding:30px;
+background:#121212;
 border-radius:14px;
-width:320px;
+border:1px solid #1f1f1f;
+padding:30px;
+box-shadow:0 0 20px rgba(0,0,0,.4);
+width:340px;
 }
 
 .input{
 width:100%;
 padding:12px;
-margin-bottom:12px;
-background:#0f0f0f;
-border:1px solid #2a2a2a;
+background:#0c0c0c;
+border:1px solid #1f1f1f;
 border-radius:8px;
+margin-top:10px;
+color:white;
 }
 
-button{
-width:100%;
-padding:12px;
+.input:focus{
+outline:none;
+border-color:#2563eb;
+}
+
+button.primary{
 background:#2563eb;
-border-radius:10px;
+padding:12px;
+border-radius:8px;
+width:100%;
+margin-top:20px;
 font-weight:600;
+}
+
+button.primary:hover{
+background:#1d4ed8;
 }
 
 </style>
@@ -55,13 +75,22 @@ font-weight:600;
 
 <div class="card">
 
-<h2 class="text-xl mb-4">Ingreso Sistema</h2>
+<div class="text-center mb-6">
 
-<input id="email" class="input" placeholder="Email">
+<h1 class="title text-2xl">CUSTODIAS SAN ISIDRO</h1>
+<p class="text-gray-400 text-sm">Sistema operativo de flota</p>
+
+</div>
+
+<input id="email" class="input" placeholder="Correo electrónico">
 
 <input id="password" type="password" class="input" placeholder="Contraseña">
 
-<button onclick="login()">Ingresar</button>
+<button onclick="login()" class="primary">
+
+Ingresar
+
+</button>
 
 </div>
 
@@ -92,7 +121,7 @@ return
 
 }
 
-location.href="dashboard.html"
+location="dashboard.html"
 
 }
 
