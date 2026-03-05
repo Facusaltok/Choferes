@@ -3,68 +3,47 @@
 
 <head>
 
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Custodias San Isidro — Acceso</title>
+<title>Custodias San Isidro</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
 
 body{
 background:#0c0c0c;
 color:white;
-font-family:Inter;
 display:flex;
 align-items:center;
 justify-content:center;
 height:100vh;
-}
-
-.title{
-font-family:Orbitron;
-letter-spacing:1px;
+font-family:Inter;
 }
 
 .card{
 background:#121212;
-border-radius:14px;
-border:1px solid #1f1f1f;
 padding:30px;
-box-shadow:0 0 20px rgba(0,0,0,.4);
-width:340px;
+border-radius:14px;
+width:320px;
 }
 
-.input{
-width:100%;
-padding:12px;
+input{
 background:#0c0c0c;
-border:1px solid #1f1f1f;
-border-radius:8px;
-margin-top:10px;
-color:white;
-}
-
-.input:focus{
-outline:none;
-border-color:#2563eb;
-}
-
-button.primary{
-background:#2563eb;
-padding:12px;
-border-radius:8px;
+border:1px solid #333;
+padding:10px;
 width:100%;
-margin-top:20px;
-font-weight:600;
+margin-bottom:12px;
+border-radius:8px;
 }
 
-button.primary:hover{
-background:#1d4ed8;
+button{
+background:#2563eb;
+padding:10px;
+width:100%;
+border-radius:8px;
 }
 
 </style>
@@ -75,21 +54,16 @@ background:#1d4ed8;
 
 <div class="card">
 
-<div class="text-center mb-6">
+<h2 class="text-xl mb-4 text-center">
+Ingreso Sistema
+</h2>
 
-<h1 class="title text-2xl">CUSTODIAS SAN ISIDRO</h1>
-<p class="text-gray-400 text-sm">Sistema operativo de flota</p>
+<input id="email" placeholder="Email">
 
-</div>
+<input id="password" type="password" placeholder="Contraseña">
 
-<input id="email" class="input" placeholder="Correo electrónico">
-
-<input id="password" type="password" class="input" placeholder="Contraseña">
-
-<button onclick="login()" class="primary">
-
+<button onclick="login()">
 Ingresar
-
 </button>
 
 </div>
@@ -104,13 +78,10 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
 
 async function login(){
 
-const email=document.getElementById("email").value
-const password=document.getElementById("password").value
+const {data,error}=await sb.auth.signInWithPassword({
 
-const {error}=await sb.auth.signInWithPassword({
-
-email,
-password
+email:email.value,
+password:password.value
 
 })
 
@@ -121,7 +92,23 @@ return
 
 }
 
+const user=data.user
+
+const {data:perfil}=await sb
+.from("users")
+.select("rol")
+.eq("auth_id",user.id)
+.single()
+
+if(perfil.rol==="admin"){
+
 location="dashboard.html"
+
+}else{
+
+location="chofer.html"
+
+}
 
 }
 
