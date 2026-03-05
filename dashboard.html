@@ -51,6 +51,12 @@ padding:10px 18px;
 border-radius:8px;
 }
 
+button.danger{
+background:#dc2626;
+padding:6px 10px;
+border-radius:6px;
+}
+
 input{
 background:#0c0c0c;
 border:1px solid #1f1f1f;
@@ -101,6 +107,8 @@ border-bottom:1px solid #1f1f1f;
 
 <div class="card">
 
+<!-- VEHICULOS -->
+
 <div id="vehiculosPanel">
 
 <h3 class="mb-4">Crear Vehículo</h3>
@@ -113,7 +121,7 @@ border-bottom:1px solid #1f1f1f;
 Crear Vehículo
 </button>
 
-<h3 class="mt-8 mb-2">Vehículos registrados</h3>
+<h3 class="mt-8">Vehículos registrados</h3>
 
 <table>
 
@@ -123,6 +131,7 @@ Crear Vehículo
 <th>Marca</th>
 <th>Modelo</th>
 <th>Patente</th>
+<th></th>
 </tr>
 
 </thead>
@@ -132,6 +141,8 @@ Crear Vehículo
 </table>
 
 </div>
+
+<!-- CHOFERES -->
 
 <div id="choferPanel" style="display:none">
 
@@ -147,7 +158,7 @@ Crear Vehículo
 Crear Chofer
 </button>
 
-<h3 class="mt-8 mb-2">Choferes registrados</h3>
+<h3 class="mt-8">Choferes registrados</h3>
 
 <table>
 
@@ -158,6 +169,7 @@ Crear Chofer
 <th>Apellido</th>
 <th>DNI</th>
 <th>Email</th>
+<th></th>
 </tr>
 
 </thead>
@@ -168,9 +180,11 @@ Crear Chofer
 
 </div>
 
+<!-- MAPA -->
+
 <div id="mapPanel" style="display:none">
 
-<div id="map" style="height:450px"></div>
+<div id="map" style="height:500px"></div>
 
 </div>
 
@@ -201,67 +215,66 @@ document.getElementById("choferPanel").style.display="none"
 document.getElementById("mapPanel").style.display="none"
 
 if(btn.dataset.tab==="vehiculos"){
-
 document.getElementById("vehiculosPanel").style.display="block"
 cargarVehiculos()
-
 }
 
 if(btn.dataset.tab==="choferes"){
-
 document.getElementById("choferPanel").style.display="block"
 cargarChoferes()
-
 }
 
 if(btn.dataset.tab==="mapa"){
-
 document.getElementById("mapPanel").style.display="block"
 cargarMapa()
-
 }
 
 }
 
 })
 
-/* CREAR VEHICULO */
+/* VEHICULOS */
 
 async function crearVehiculo(){
 
 await sb.from("vehiculos").insert({
 
-marca:document.getElementById("marca").value,
-modelo:document.getElementById("modelo").value,
-dominio:document.getElementById("dominio").value
+marca:marca.value,
+modelo:modelo.value,
+dominio:dominio.value
 
 })
-
-alert("Vehículo creado")
 
 cargarVehiculos()
 
 }
 
-/* LISTA VEHICULOS */
-
 async function cargarVehiculos(){
 
 const {data}=await sb.from("vehiculos").select("*")
 
-const lista=document.getElementById("vehiculosLista")
-
-lista.innerHTML=""
+vehiculosLista.innerHTML=""
 
 data.forEach(v=>{
 
-lista.innerHTML+=`
+vehiculosLista.innerHTML+=`
 
 <tr>
 
 <td>${v.marca}</td>
 <td>${v.modelo}</td>
 <td>${v.dominio}</td>
+
+<td>
+
+<button class="danger"
+onclick="borrarVehiculo('${v.id}')">
+
+Eliminar
+
+</button>
+
+</td>
 
 </tr>
 
@@ -271,58 +284,55 @@ lista.innerHTML+=`
 
 }
 
-/* CREAR CHOFER */
+async function borrarVehiculo(id){
+
+await sb.from("vehiculos").delete().eq("id",id)
+
+cargarVehiculos()
+
+}
+
+/* CHOFERES */
 
 async function crearChofer(){
 
-const email=document.getElementById("email").value
-const password=document.getElementById("password").value
-
 const {data,error}=await sb.auth.signUp({
 
-email,
-password
+email:email.value,
+password:password.value
 
 })
 
 if(error){
-
 alert(error.message)
 return
-
 }
 
 await sb.from("users").insert({
 
 auth_id:data.user.id,
 
-nombre:document.getElementById("nombre").value,
-apellido:document.getElementById("apellido").value,
-dni:document.getElementById("dni").value,
-email:email,
+nombre:nombre.value,
+apellido:apellido.value,
+dni:dni.value,
+email:email.value,
 rol:"chofer"
 
 })
-
-alert("Chofer creado")
 
 cargarChoferes()
 
 }
 
-/* LISTA CHOFERES */
-
 async function cargarChoferes(){
 
 const {data}=await sb.from("users").select("*")
 
-const lista=document.getElementById("choferLista")
-
-lista.innerHTML=""
+choferLista.innerHTML=""
 
 data.forEach(c=>{
 
-lista.innerHTML+=`
+choferLista.innerHTML+=`
 
 <tr>
 
@@ -331,6 +341,17 @@ lista.innerHTML+=`
 <td>${c.dni}</td>
 <td>${c.email}</td>
 
+<td>
+
+<button class="danger"
+onclick="borrarChofer('${c.id}')">
+
+Eliminar
+
+</button>
+
+</td>
+
 </tr>
 
 `
@@ -339,19 +360,35 @@ lista.innerHTML+=`
 
 }
 
-/* MAPA */
+async function borrarChofer(id){
 
-function cargarMapa(){
+await sb.from("users").delete().eq("id",id)
 
-const map=L.map('map').setView([-34.6,-58.4],12)
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
-
-cargarGPS(map)
+cargarChoferes()
 
 }
 
-async function cargarGPS(map){
+/* MAPA */
+
+let map
+
+function cargarMapa(){
+
+if(!map){
+
+map=L.map('map').setView([-34.6,-58.4],12)
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
+
+}
+
+actualizarMapa()
+
+setInterval(actualizarMapa,5000)
+
+}
+
+async function actualizarMapa(){
 
 const {data}=await sb.from("gps").select("*")
 
@@ -361,7 +398,7 @@ const marker=L.marker([g.lat,g.lng]).addTo(map)
 
 marker.bindPopup(`
 
-Vehículo en vivo
+Vehículo en movimiento
 
 <br><br>
 
@@ -378,7 +415,9 @@ Navegar con Waze
 
 }
 
-document.getElementById("logout").onclick=async()=>{
+/* LOGOUT */
+
+logout.onclick=async()=>{
 
 await sb.auth.signOut()
 
