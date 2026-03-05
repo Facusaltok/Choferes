@@ -3,31 +3,38 @@
 
 <head>
 
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Custodias San Isidro</title>
+<title>Ingreso Sistema</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
 
 body{
 background:#0c0c0c;
 color:white;
+font-family:Inter;
 display:flex;
 align-items:center;
 justify-content:center;
 height:100vh;
-font-family:Inter;
 }
 
 .card{
 background:#121212;
-padding:30px;
 border-radius:14px;
-width:320px;
+border:1px solid #1f1f1f;
+padding:30px;
+width:350px;
+}
+
+.title{
+font-family:Orbitron;
 }
 
 input{
@@ -35,7 +42,7 @@ background:#0c0c0c;
 border:1px solid #333;
 padding:10px;
 width:100%;
-margin-bottom:12px;
+margin-bottom:10px;
 border-radius:8px;
 }
 
@@ -54,8 +61,8 @@ border-radius:8px;
 
 <div class="card">
 
-<h2 class="text-xl mb-4 text-center">
-Ingreso Sistema
+<h2 class="title text-xl mb-6 text-center">
+CUSTODIAS SAN ISIDRO
 </h2>
 
 <input id="email" placeholder="Email">
@@ -99,6 +106,13 @@ const {data:perfil}=await sb
 .select("rol")
 .eq("auth_id",user.id)
 .single()
+
+if(!perfil){
+
+alert("Usuario no registrado en el sistema")
+return
+
+}
 
 if(perfil.rol==="admin"){
 
